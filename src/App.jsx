@@ -30,6 +30,8 @@ import {
   Clock
 } from 'lucide-react'
 import './App.css'
+import digitalServicesImg from './assets/digital-services.jpg';
+import heroBgImg from './assets/hero-bg.jpg';
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -173,6 +175,13 @@ function App() {
 
       {/* Hero Section */}
       <section id="home" className="hero-gradient min-h-screen flex items-center justify-center relative">
+        {/* Hero Background Image */}
+        <img 
+          src={heroBgImg} 
+          alt="Hero Background" 
+          className="absolute inset-0 w-full h-full object-cover opacity-30 z-0" 
+          style={{ pointerEvents: 'none' }}
+        />
         {/* Floating Elements */}
         <div className="floating-element"></div>
         <div className="floating-element"></div>
@@ -232,7 +241,7 @@ function App() {
       </section>
 
       {/* About Section */}
-      <section id="about" className={`py-20 section-reveal ${isVisible.about ? 'revealed' : ''}`}>
+      <section id="about" className={`py-20 section-reveal ${isVisible.about ? 'revealed' : ''}`}> 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
@@ -266,6 +275,11 @@ function App() {
             </div>
             <div className="relative">
               <div className="glass-effect p-8 rounded-2xl hover-lift">
+                <img 
+                  src={digitalServicesImg} 
+                  alt="Digital Services" 
+                  className="rounded-xl mb-6 shadow-lg w-full object-cover max-h-56" 
+                />
                 <div className="grid grid-cols-2 gap-6">
                   <div className="text-center">
                     <Users className="h-12 w-12 text-primary mx-auto mb-4" />
