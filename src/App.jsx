@@ -399,6 +399,22 @@ function App() {
         </div>
       </section>
 
+      {/* Map Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
+        <div className="rounded-lg overflow-hidden shadow-lg" style={{ width: "100%", height: "400px" }}>
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d112216.53601859121!2d77.27182527712564!3d28.486570311687547!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390cdd2d3a50c215%3A0xb99673333d4b103c!2sMahakaal%20cyber%20cafe!5e0!3m2!1sen!2sin!4v1751384086522!5m2!1sen!2sin"
+            width="100%"
+            height="100%"
+            style={{ border: 0 }}
+            allowFullScreen=""
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            title="Mahakaal Cyber Cafe Location"
+          ></iframe>
+        </div>
+      </div>
+
       {/* Contact Section */}
       <section id="contact" className={`py-20 section-reveal ${isVisible.contact ? 'revealed' : ''}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
