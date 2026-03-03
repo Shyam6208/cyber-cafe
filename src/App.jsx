@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button.jsx'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card.jsx'
 import { Badge } from '@/components/ui/badge.jsx'
@@ -36,6 +37,16 @@ import heroBgImg from './assets/hero-bg.jpg';
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isVisible, setIsVisible] = useState({})
+  const [results, setResults] = useState([])
+  const [isResultsLoading, setIsResultsLoading] = useState(true)
+  const [resultsError, setResultsError] = useState(null)
+  const [showScrollTop, setShowScrollTop] = useState(false)
+  const [trackId, setTrackId] = useState('')
+  const [requestName, setRequestName] = useState('')
+  const [requestPhone, setRequestPhone] = useState('')
+  const [requestService, setRequestService] = useState('')
+  const [requestNotes, setRequestNotes] = useState('')
+  const [requestImages, setRequestImages] = useState([])
 
   // Intersection Observer for animations
   useEffect(() => {
@@ -59,29 +70,157 @@ function App() {
     return () => observer.disconnect()
   }, [])
 
+  // Show "back to top" button on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 300)
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  // Fetch latest results from backend API (placeholder)
+  useEffect(() => {
+    const fetchResults = async () => {
+      try {
+        setIsResultsLoading(true)
+        setResultsError(null)
+
+        const response = await fetch('/api/results')
+
+        if (!response.ok) {
+          throw new Error('Failed to load results')
+        }
+
+        const data = await response.json()
+
+        // Expecting array of { id, title, link, date, source }
+        if (Array.isArray(data)) {
+          setResults(data)
+        } else {
+          throw new Error('Unexpected results format')
+        }
+      } catch (error) {
+        console.error('Error loading results:', error)
+        setResultsError('Currently unable to load live results.')
+
+        // Optional: fallback example data so UI is not empty
+        setResults([
+          {
+            id: 1,
+            title: 'Example: SSC CGL 2026 Result',
+            date: '02 Mar 2026',
+            link: '#',
+            source: 'Sample Data'
+          }
+        ])
+      } finally {
+        setIsResultsLoading(false)
+      }
+    }
+
+    fetchResults()
+
+    // Optional: refresh every 5 minutes
+    const intervalId = setInterval(fetchResults, 5 * 60 * 1000)
+    return () => clearInterval(intervalId)
+  }, [])
+
   const services = [
-    { icon: FileText, title: "Pan Card", description: "Quick PAN card application and updates" },
-    { icon: CreditCard, title: "Ration Card", description: "New ration card registration and modifications" },
-    { icon: CreditCard, title: "Aadhar Card", description: "Aadhar enrollment and updates" },
-    { icon: Car, title: "Driving License", description: "DL application and renewal services" },
-    { icon: Calculator, title: "GST Registration", description: "Complete GST registration assistance" },
-    { icon: Building, title: "Company Registration", description: "Business registration and compliance" },
-    { icon: FileText, title: "Property ID", description: "Property documentation services" },
-    { icon: FileText, title: "PF Form", description: "Provident fund related services" }
+    {
+      id: 'pan-card',
+      icon: FileText,
+      title: 'PAN Card',
+      description: 'New PAN card application and corrections through NSDL/UTI portals with full document support.',
+      startingPrice: 199
+    },
+    {
+      id: 'aadhar-services',
+      icon: CreditCard,
+      title: 'Aadhar Services',
+      description: 'Aadhar enrollment help, address / mobile / photo update guidance and download of e-Aadhar.',
+      startingPrice: 149
+    },
+    {
+      id: 'ration-card',
+      icon: CreditCard,
+      title: 'Ration Card',
+      description: 'New ration card registration, member addition/removal and address updates as per portal.',
+      startingPrice: 249
+    },
+    {
+      id: 'voter-id',
+      icon: FileText,
+      title: 'Voter ID (EPIC)',
+      description: 'New voter ID registration (Form 6), corrections and address change for your constituency.',
+      startingPrice: 149
+    },
+    {
+      id: 'driving-license',
+      icon: Car,
+      title: 'Driving License (DL)',
+      description: 'Online learning license, permanent license, renewal and slot booking via Parivahan portal.',
+      startingPrice: 299
+    },
+    {
+      id: 'passport',
+      icon: Globe,
+      title: 'Passport Services',
+      description: 'Online passport application, appointment booking and document checklist guidance.',
+      startingPrice: 399
+    },
+    {
+      id: 'exam-form',
+      icon: FileText,
+      title: 'Exam / Admission Forms',
+      description: 'Online form fill-up for school, college, government and competitive exams with fee payment.',
+      startingPrice: 149
+    },
+    {
+      id: 'scholarship',
+      icon: BookOpen,
+      title: 'Scholarship & Portal Updates',
+      description: 'NSP, state scholarship forms, renewal and tracking with upload support.',
+      startingPrice: 149
+    },
+    {
+      id: 'gst-registration',
+      icon: Calculator,
+      title: 'GST Registration',
+      description: 'New GST registration, amendments and basic GST portal guidance for business owners.',
+      startingPrice: 499
+    },
+    {
+      id: 'company-registration',
+      icon: Building,
+      title: 'Company / MSME Registration',
+      description: 'Udyam (MSME), Shop Act and basic business registration assistance with document guidance.',
+      startingPrice: 399
+    },
+    {
+      id: 'property-id',
+      icon: FileText,
+      title: 'Property ID & Revenue Records',
+      description: 'Online property ID search, mutation status check and basic revenue record downloads.',
+      startingPrice: 199
+    },
+    {
+      id: 'printing-scanning',
+      icon: Monitor,
+      title: 'Printing, Scanning & Lamination',
+      description: 'High quality print, scan, photocopy, lamination and PDF creation from mobile or pen drive.',
+      startingPrice: 10
+    }
   ]
 
   const courses = [
     { icon: Monitor, title: "Basic Computer", level: "Beginner", duration: "3 months" },
     { icon: Calculator, title: "Excel & Advanced Excel", level: "Intermediate", duration: "2 months" },
-    { icon: Calculator, title: "TDS", level: "Advanced", duration: "1 month" },
-    { icon: Calculator, title: "ADC", level: "Advanced", duration: "2 months" },
-    { icon: Calculator, title: "Tally ERP 9 with GST", level: "Professional", duration: "3 months" },
     { icon: Calculator, title: "Tally Prime", level: "Professional", duration: "2 months" },
-    { icon: BookOpen, title: "All Accounting Works", level: "Expert", duration: "4 months" },
     { icon: Code, title: "Python", level: "Intermediate", duration: "4 months" },
-    { icon: Code, title: "C & C++ Language", level: "Intermediate", duration: "3 months" },
-    { icon: Database, title: "MySQL", level: "Advanced", duration: "2 months" },
-    { icon: Globe, title: "Web Development", level: "Advanced", duration: "6 months" }
+    { icon: Globe, title: "Web Development", level: "Advanced", duration: "6 months" },
+    { icon: Database, title: "MySQL", level: "Advanced", duration: "2 months" }
   ]
 
   const testimonials = [
@@ -109,34 +248,84 @@ function App() {
     { number: "99%", label: "Success Rate" }
   ]
 
+  const featurePoints = [
+    {
+      icon: Shield,
+      title: 'Secure Govt. Portals',
+      description: 'All services processed through official government websites with OTP verification and safe handling of your data.'
+    },
+    {
+      icon: Zap,
+      title: 'Fast, Guided Support',
+      description: 'Step‑by‑step assistance for forms, uploads, and payments so you never get stuck in the process.'
+    },
+    {
+      icon: Clock,
+      title: 'Transparent Timelines',
+      description: 'Clear expected timelines and WhatsApp updates so you always know the status of your application.'
+    }
+  ]
+
+  const formatFilesList = (files) => {
+    if (!files || files.length === 0) return '-'
+    return files.map((f) => f.name).join(', ')
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 nav-glass">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-2">
-              <Monitor className="h-8 w-8 text-primary" />
+            <button
+              type="button"
+              className="flex items-center space-x-2 group"
+              onClick={() => {
+                const section = document.getElementById('home')
+                if (section) {
+                  section.scrollIntoView({ behavior: 'smooth' })
+                } else {
+                  window.scrollTo({ top: 0, behavior: 'smooth' })
+                }
+              }}
+            >
+              <Monitor className="h-8 w-8 text-primary group-hover:scale-105 transition-transform" />
               <span className="text-xl font-bold gradient-text">Mahakaal Cyber Cafe</span>
-            </div>
+            </button>
             
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-8">
-              <a href="#home" className="hover:text-primary transition-colors">Home</a>
-              <a href="#about" className="hover:text-primary transition-colors">About</a>
-              <a href="#services" className="hover:text-primary transition-colors">Services</a>
-              <a href="#institute" className="hover:text-primary transition-colors">Institute</a>
-              <a href="#contact" className="hover:text-primary transition-colors">Contact</a>
-              <Button 
-                className="btn-primary"
-                onClick={() => {
-                  const message = encodeURIComponent('I want to get in touch with you.');
-                  const phone = '7550507540';
-                  window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
-                }}
+            <div className="hidden md:flex items-center space-x-6">
+              <a href="#services" className="text-sm hover:text-primary transition-colors">Services</a>
+              <a href="#institute" className="text-sm hover:text-primary transition-colors">Institute</a>
+              <a href="#testimonials" className="text-sm hover:text-primary transition-colors">Testimonials</a>
+              <a href="#contact" className="text-sm hover:text-primary transition-colors">Contact</a>
+              <Link
+                to="/admin"
+                className="text-xs text-muted-foreground hover:text-primary transition-colors"
               >
-                Get in Touch
-              </Button>
+                Admin
+              </Link>
+              <div className="flex items-center space-x-3 ml-4">
+                <Button
+                  variant="outline"
+                  className="btn-secondary text-xs px-3 py-2"
+                  onClick={() => {
+                    const section = document.getElementById('track');
+                    if (section) section.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                >
+                  Track Application
+                </Button>
+                <Button 
+                  className="btn-primary text-xs px-4 py-2"
+                  onClick={() => {
+                    const section = document.getElementById('request');
+                    if (section) section.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                >
+                  Request Service
+                </Button>
+              </div>
             </div>
 
             {/* Mobile menu button */}
@@ -152,20 +341,34 @@ function App() {
           {isMenuOpen && (
             <div className="md:hidden bg-card/95 backdrop-blur-lg rounded-lg mt-2 p-4">
               <div className="flex flex-col space-y-4">
-                <a href="#home" className="hover:text-primary transition-colors">Home</a>
-                <a href="#about" className="hover:text-primary transition-colors">About</a>
                 <a href="#services" className="hover:text-primary transition-colors">Services</a>
                 <a href="#institute" className="hover:text-primary transition-colors">Institute</a>
+                <a href="#testimonials" className="hover:text-primary transition-colors">Testimonials</a>
                 <a href="#contact" className="hover:text-primary transition-colors">Contact</a>
+                <Link
+                  to="/admin"
+                  className="text-left text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Admin
+                </Link>
                 <Button 
-                  className="btn-primary w-full"
+                  variant="outline"
+                  className="btn-secondary w-full text-sm"
                   onClick={() => {
-                    const message = encodeURIComponent('I want to get in touch with you.');
-                    const phone = '7550507540';
-                    window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+                    const section = document.getElementById('track');
+                    if (section) section.scrollIntoView({ behavior: 'smooth' });
                   }}
                 >
-                  Get in Touch
+                  Track Application
+                </Button>
+                <Button 
+                  className="btn-primary w-full text-sm"
+                  onClick={() => {
+                    const section = document.getElementById('request');
+                    if (section) section.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                >
+                  Request Service
                 </Button>
               </div>
             </div>
@@ -189,36 +392,115 @@ function App() {
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <div className="animate-fade-in-up">
+            <p className="text-sm md:text-base text-muted-foreground mb-3">
+              Mahakaal Cyber Cafe
+            </p>
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              Your One-Stop Destination for
-              <span className="gradient-text block mt-2">Digital Services & Education</span>
+              Your One-Stop Destination for Digital Services & Education
             </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-              From essential online services to career-boosting professional courses, 
-              we have you covered with modern facilities and expert guidance.
+            <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
+              From essential online services to professional courses, we deliver secure and fast support.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 size="lg" 
                 className="btn-primary text-lg px-8 py-3"
                 onClick={() => {
-                  const section = document.getElementById('services');
+                  const section = document.getElementById('track');
                   if (section) section.scrollIntoView({ behavior: 'smooth' });
                 }}
               >
-                Explore Services <ArrowRight className="ml-2 h-5 w-5" />
+                Track Application
               </Button>
               <Button 
                 size="lg" 
                 variant="outline" 
                 className="btn-secondary text-lg px-8 py-3"
                 onClick={() => {
-                  const section = document.getElementById('institute');
+                  const section = document.getElementById('request');
                   if (section) section.scrollIntoView({ behavior: 'smooth' });
                 }}
               >
-                View Courses
+                Request Service
               </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Feature Highlights (like "features" strip) */}
+      <section className="py-10 bg-card/40 border-b border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-3 gap-6">
+            {featurePoints.map((item, index) => (
+              <div
+                key={index}
+                className="glass-effect rounded-xl p-6 flex items-start gap-4 hover-lift"
+              >
+                <div className="mt-1">
+                  <item.icon className="h-7 w-7 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-base mb-1">{item.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {item.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Latest Results Section */}
+      <section className="py-6 bg-card/40 border-y border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row md:items-start gap-4">
+            <div className="flex items-center gap-2">
+              <Badge className="px-3 py-1 text-xs md:text-sm">Latest Govt. Results</Badge>
+            </div>
+            <div className="flex-1 text-sm space-y-2">
+              {isResultsLoading && (
+                <p className="text-muted-foreground">Loading latest results...</p>
+              )}
+              {!isResultsLoading && resultsError && (
+                <p className="text-xs text-red-500">{resultsError}</p>
+              )}
+              {!isResultsLoading && results && results.length > 0 && (
+                <ul className="space-y-1">
+                  {results.map((item) => (
+                    <li
+                      key={item.id}
+                      className="flex flex-wrap items-center gap-2 text-xs md:text-sm"
+                    >
+                      {item.date && (
+                        <span className="text-muted-foreground">{item.date}</span>
+                      )}
+                      <span className="font-medium">{item.title}</span>
+                      {item.source && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                          {item.source}
+                        </span>
+                      )}
+                      {item.link && item.link !== '#' && (
+                        <a
+                          href={item.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary underline"
+                        >
+                          View
+                        </a>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {!isResultsLoading && (!results || results.length === 0) && !resultsError && (
+                <p className="text-muted-foreground text-xs">
+                  No results available right now. Please check back later.
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -236,6 +518,53 @@ function App() {
                 <div className="text-muted-foreground mt-2">{stat.label}</div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Track Application Section */}
+      <section id="track" className={`py-16 section-reveal ${isVisible.track ? 'revealed' : ''}`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-2 gap-10 items-center">
+            <div>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">Track Your Application</h2>
+              <p className="text-lg text-muted-foreground mb-4">
+                Enter your mobile number or tracking ID to quickly follow up on your application status via WhatsApp.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                After submitting, we&apos;ll open WhatsApp with your details pre-filled so our team can respond with the latest update.
+              </p>
+            </div>
+            <div>
+              <Card className="bg-card/80">
+                <CardHeader>
+                  <CardTitle>Get Status Update</CardTitle>
+                  <CardDescription>We usually reply within working hours.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Input
+                    placeholder="Mobile number or tracking ID"
+                    value={trackId}
+                    onChange={(e) => setTrackId(e.target.value)}
+                  />
+                  <Button
+                    className="btn-primary w-full"
+                    disabled={!trackId.trim()}
+                    onClick={() => {
+                      const trimmed = trackId.trim()
+                      if (!trimmed) return
+                      const message = encodeURIComponent(
+                        `Namaste, mujhe apni application ka status track karna hai.\n\nTracking / Mobile: ${trimmed}\n\nKripya current status batayein.`
+                      )
+                      const phone = '7550507540'
+                      window.open(`https://wa.me/${phone}?text=${message}`, '_blank')
+                    }}
+                  >
+                    Track on WhatsApp
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </section>
@@ -301,26 +630,55 @@ function App() {
       {/* Services Section */}
       <section id="services" className={`py-20 bg-card/30 section-reveal ${isVisible.services ? 'revealed' : ''}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Our <span className="gradient-text">Digital Services</span>
-            </h2>
+          <div className="text-center mb-10">
+            <h2 className="text-3xl md:text-4xl font-bold mb-3">Services</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Quick and reliable online services for all your government and official documentation needs
+              Reliable digital help for government, student, and business needs.
             </p>
+            <div className="mt-6 flex justify-center">
+              <Button
+                className="btn-primary"
+                onClick={() => {
+                  const message = encodeURIComponent('I want to request a service. Please share details and required documents.');
+                  const phone = '7550507540';
+                  window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+                }}
+              >
+                Request a Service
+              </Button>
+            </div>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {services.map((service, index) => (
-              <Card key={index} className="service-card bg-card/80 hover-lift">
-                <CardHeader className="text-center">
-                  <service.icon className="h-12 w-12 text-primary mx-auto mb-4" />
-                  <CardTitle className="text-lg">{service.title}</CardTitle>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {services.map((service) => (
+              <Card key={service.id} className="service-card bg-card/80 hover-lift">
+                <CardHeader>
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <service.icon className="h-10 w-10 text-primary" />
+                      <div>
+                        <CardTitle className="text-lg">{service.title}</CardTitle>
+                        <CardDescription className="mt-1">
+                          {service.description}
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </div>
                 </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-center">
-                    {service.description}
-                  </CardDescription>
+                <CardContent className="pt-0">
+                  <div className="flex justify-end">
+                    <Button
+                      className="btn-secondary"
+                      variant="outline"
+                      onClick={() => {
+                        const message = encodeURIComponent(`I want to apply for: ${service.title}. Please tell me the process and required documents.`);
+                        const phone = '7550507540';
+                        window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+                      }}
+                    >
+                      Apply
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             ))}
@@ -332,11 +690,9 @@ function App() {
       <section id="institute" className={`py-20 section-reveal ${isVisible.institute ? 'revealed' : ''}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              <span className="gradient-text">Mahakaal Institute</span>
-            </h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-3">Institute</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Empowering you with in-demand skills for a brighter future through professional courses
+              Practical professional courses to build skills and career confidence.
             </p>
           </div>
 
@@ -373,12 +729,15 @@ function App() {
       </section>
 
       {/* Testimonials Section */}
-      <section className={`py-20 bg-card/30 section-reveal ${isVisible.testimonials ? 'revealed' : ''}`}>
+      <section id="testimonials" className={`py-20 bg-card/30 section-reveal ${isVisible.testimonials ? 'revealed' : ''}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              What Our <span className="gradient-text">Customers Say</span>
+              Testimonials
             </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Families, students, and professionals trust our process every day.
+            </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
@@ -414,6 +773,108 @@ function App() {
           ></iframe>
         </div>
       </div>
+
+      {/* Request Service Section */}
+      <section id="request" className={`py-20 bg-card/40 section-reveal ${isVisible.request ? 'revealed' : ''}`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold mb-3">Request a Service</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Share your details and service requirement. We&apos;ll confirm documents, fees, and timelines on WhatsApp.
+            </p>
+          </div>
+          <div className="max-w-3xl mx-auto">
+            <Card className="bg-card/80">
+              <CardHeader>
+                <CardTitle>Service Request Form</CardTitle>
+                <CardDescription>Fields marked * are important so we can respond correctly.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Input
+                  placeholder="Full Name *"
+                  value={requestName}
+                  onChange={(e) => setRequestName(e.target.value)}
+                />
+                <Input
+                  placeholder="WhatsApp Number *"
+                  value={requestPhone}
+                  onChange={(e) => setRequestPhone(e.target.value)}
+                />
+                <div className="space-y-2">
+                  <select
+                    className="w-full rounded-md bg-background border border-border px-3 py-2 text-sm"
+                    value={requestService}
+                    onChange={(e) => setRequestService(e.target.value)}
+                  >
+                    <option value="">Select Service *</option>
+                    {services.map((service) => (
+                      <option key={service.id} value={service.title}>
+                        {service.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <Textarea
+                  placeholder="Additional details (documents you have, preferred time, etc.)"
+                  rows={4}
+                  value={requestNotes}
+                  onChange={(e) => setRequestNotes(e.target.value)}
+                />
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Attach images (optional)</label>
+                  <Input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={(e) => {
+                      const files = Array.from(e.target.files || [])
+                      setRequestImages(files)
+                    }}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Note: Images can&apos;t be auto-attached to WhatsApp from the website. After WhatsApp opens,
+                    please attach these images in the chat.
+                  </p>
+
+                  {requestImages.length > 0 && (
+                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 pt-2">
+                      {requestImages.map((file, idx) => (
+                        <div
+                          key={`${file.name}-${idx}`}
+                          className="rounded-md overflow-hidden border border-border bg-card/60"
+                          title={file.name}
+                        >
+                          <img
+                            src={URL.createObjectURL(file)}
+                            alt={file.name}
+                            className="w-full h-16 object-cover"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <Button
+                  className="btn-primary w-full"
+                  disabled={!requestName.trim() || !requestPhone.trim() || !requestService}
+                  onClick={() => {
+                    if (!requestName.trim() || !requestPhone.trim() || !requestService) return
+                    const message = encodeURIComponent(
+                      `Namaste, mai ek nayi service request karna chahta/chahti hoon.\n\nNaam: ${requestName}\nWhatsApp: ${requestPhone}\nService: ${requestService}\n\nExtra details:\n${requestNotes || '-'}\n\nImages selected (I will attach in WhatsApp):\n${formatFilesList(requestImages)}\n\nKripya required documents, fees aur expected time batayein.`
+                    )
+                    const phone = '7550507540'
+                    window.open(`https://wa.me/${phone}?text=${message}`, '_blank')
+                  }}
+                >
+                  Submit & Open WhatsApp
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
 
       {/* Contact Section */}
       <section id="contact" className={`py-20 section-reveal ${isVisible.contact ? 'revealed' : ''}`}>
@@ -479,10 +940,21 @@ function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
-              <div className="flex items-center space-x-2 mb-4">
+              <button
+                type="button"
+                className="flex items-center space-x-2 mb-4 hover:text-primary transition-colors"
+                onClick={() => {
+                  const section = document.getElementById('home')
+                  if (section) {
+                    section.scrollIntoView({ behavior: 'smooth' })
+                  } else {
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                  }
+                }}
+              >
                 <Monitor className="h-6 w-6 text-primary" />
                 <span className="font-bold">Mahakaal Cyber Cafe</span>
-              </div>
+              </button>
               <p className="text-muted-foreground text-sm">
                 Your trusted partner for digital services and professional education.
               </p>
@@ -520,11 +992,41 @@ function App() {
               </ul>
             </div>
           </div>
-          <div className="border-t border-border mt-8 pt-8 text-center text-sm text-muted-foreground">
-            <p>&copy; 2024 Mahakaal Cyber Cafe & Institute. All rights reserved.</p>
+          <div className="border-t border-border mt-8 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
+            <p>&copy; 2025 Mahakaal Cyber Cafe & Institute. All rights reserved.</p>
+            <p className="text-xs md:text-sm">
+              Designed & Developed with <span className="text-primary">Mahakaal Cyber Cafe</span>
+            </p>
           </div>
         </div>
       </footer>
+
+      {/* Floating WhatsApp & Scroll to Top Buttons */}
+      <div className="fixed bottom-4 right-4 flex flex-col gap-3 z-50">
+        <button
+          aria-label="Chat on WhatsApp"
+          className="rounded-full shadow-lg btn-primary flex items-center justify-center w-12 h-12 md:w-14 md:h-14"
+          onClick={() => {
+            const message = encodeURIComponent('Namaste, mujhe aapki services ke baare mein jankari chahiye.');
+            const phone = '7550507540';
+            window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+          }}
+        >
+          <Phone className="h-5 w-5 text-primary-foreground" />
+        </button>
+
+        {showScrollTop && (
+          <button
+            aria-label="Back to top"
+            className="rounded-full bg-card/90 border border-border shadow-lg flex items-center justify-center w-10 h-10 text-xs text-muted-foreground hover:text-primary hover:border-primary transition-colors"
+            onClick={() => {
+              window.scrollTo({ top: 0, behavior: 'smooth' })
+            }}
+          >
+            ↑
+          </button>
+        )}
+      </div>
     </div>
   )
 }
