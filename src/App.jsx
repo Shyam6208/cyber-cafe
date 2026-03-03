@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button.jsx'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card.jsx'
 import { Badge } from '@/components/ui/badge.jsx'
@@ -299,12 +298,6 @@ function App() {
               <a href="#institute" className="text-sm hover:text-primary transition-colors">Institute</a>
               <a href="#testimonials" className="text-sm hover:text-primary transition-colors">Testimonials</a>
               <a href="#contact" className="text-sm hover:text-primary transition-colors">Contact</a>
-              <Link
-                to="/admin"
-                className="text-xs text-muted-foreground hover:text-primary transition-colors"
-              >
-                Admin
-              </Link>
               <div className="flex items-center space-x-3 ml-4">
                 <Button
                   variant="outline"
@@ -345,12 +338,6 @@ function App() {
                 <a href="#institute" className="hover:text-primary transition-colors">Institute</a>
                 <a href="#testimonials" className="hover:text-primary transition-colors">Testimonials</a>
                 <a href="#contact" className="hover:text-primary transition-colors">Contact</a>
-                <Link
-                  to="/admin"
-                  className="text-left text-sm text-muted-foreground hover:text-primary transition-colors"
-                >
-                  Admin
-                </Link>
                 <Button 
                   variant="outline"
                   className="btn-secondary w-full text-sm"
